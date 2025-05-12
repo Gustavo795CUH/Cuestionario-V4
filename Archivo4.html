@@ -1,0 +1,215 @@
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trivia de Conocimientos Generales</title>
+
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        body {
+        font-family: 'Arial Rounded MT Bold', sans-serif;
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        color: #fff;
+        padding: 40px 20px;
+        text-align: center;
+        overflow-x: hidden;
+        }
+        h1 {
+        color: #ff4c4c;
+        font-size: 2.5em;
+        margin-bottom: 30px;
+        text-shadow: 2px 2px #000;
+        }
+        .trivia-box {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 40px 30px;
+        max-width: 700px;
+        margin: auto;
+        box-shadow: 0 0 30px rgba(0,0,0,0.4);
+        -webkit-backdrop-filter: blur(8px); /* Safari */
+        backdrop-filter: blur(8px); /* Modern browsers */
+        animation: fadeIn 1s ease-in-out;
+        }
+        .question {
+        font-size: 1.7em;
+        margin-bottom: 25px;
+        color: #fefefe;
+        }
+        .options button {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+        width: 100%;
+        margin: 10px 0;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #ffffff;
+        color: #2a2a2a;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .options button:hover:not(:disabled) {
+        transform: scale(1.02);
+        background: #f0f0f0;
+        }
+        .options button.correct {
+        background-color: #4CAF50 !important;
+        color: white;
+        }
+        .options button.incorrect {
+        background-color: #f44336 !important;
+        color: white;
+        }
+        .options button:disabled {
+        cursor: not-allowed;
+        opacity: 0.8;
+        }
+        #next-btn {
+        background: linear-gradient(to right, #ff4c4c, #ff6b6b);
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1em;
+        margin-top: 30px;
+        cursor: not-allowed;
+        opacity: 0.5;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        #next-btn.active {
+        cursor: pointer;
+        opacity: 1;
+        }
+        .result {
+        font-size: 1.7em;
+        margin-top: 40px;
+        font-weight: bold;
+        color: #ffe066;
+        text-shadow: 1px 1px #000;
+        }
+        @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    </head>
+    <body>
+    <h1 class="animate__animated animate__heartBeat">
+        <i class="fa-solid fa-star"></i> Trivia de Conocimientos Generales <i class="fa-solid fa-lightbulb"></i>
+    </h1>
+
+    <div class="trivia-box animate__animated animate__fadeInUp">
+        <div id="pregunta" class="question"></div>
+        <div class="options" id="opciones"></div>
+        <button id="next-btn" onclick="siguientePregunta()"><i class="fa-solid fa-forward"></i> Siguiente</button>
+        <div id="resultado" class="result"></div>
+    </div>
+
+    <script>
+        const iconos = ['fa-fish', 'fa-rocket', 'fa-tree', 'fa-book', 'fa-paint-brush'];
+        const preguntas = [
+        {
+            pregunta: "¿Cuál es el océano más grande del mundo?",
+            opciones: ["Atlántico", "Índico", "Pacífico", "Ártico"],
+            correcta: 2
+        },
+        {
+            pregunta: "¿Cuántos planetas hay en el sistema solar?",
+            opciones: ["7", "8", "9", "10"],
+            correcta: 1
+        },
+        {
+            pregunta: "¿Quién escribió 'Cien años de soledad'?",
+            opciones: ["Mario Vargas Llosa", "Gabriel García Márquez", "Pablo Neruda", "Julio Cortázar"],
+            correcta: 1
+        },
+        {
+            pregunta: "¿Cuál es la capital de Australia?",
+            opciones: ["Sídney", "Melbourne", "Canberra", "Brisbane"],
+            correcta: 2
+        },
+        {
+            pregunta: "¿Qué elemento químico tiene el símbolo O?",
+            opciones: ["Oro", "Osmio", "Oxígeno", "Óxido"],
+            correcta: 2
+        }
+        ];
+
+        let indice = 0;
+        let puntaje = 0;
+
+        function cargarPregunta() {
+        const pregunta = preguntas[indice];
+        document.getElementById('pregunta').textContent = pregunta.pregunta;
+        const opcionesDiv = document.getElementById('opciones');
+        opcionesDiv.innerHTML = '';
+        pregunta.opciones.forEach((op, i) => {
+            const btn = document.createElement('button');
+            const icon = document.createElement('i');
+            icon.className = `fa-solid ${iconos[i % iconos.length]}`;
+            btn.appendChild(icon);
+            const span = document.createElement('span');
+            span.textContent = op;
+            btn.appendChild(span);
+            btn.onclick = () => seleccionarRespuesta(i);
+            opcionesDiv.appendChild(btn);
+        });
+        document.getElementById('next-btn').classList.remove('active');
+        document.getElementById('next-btn').disabled = true;
+        document.getElementById('resultado').textContent = '';
+        }
+
+        function seleccionarRespuesta(i) {
+        const pregunta = preguntas[indice];
+        const botones = document.querySelectorAll('#opciones button');
+        botones.forEach((btn, idx) => {
+            btn.disabled = true;
+            if (idx === pregunta.correcta) {
+            btn.classList.add('correct');
+            } else if (idx === i) {
+            btn.classList.add('incorrect');
+            }
+        });
+        if (i === pregunta.correcta) puntaje++;
+        document.getElementById('next-btn').classList.add('active');
+        document.getElementById('next-btn').disabled = false;
+        }
+
+        function siguientePregunta() {
+        indice++;
+        if (indice < preguntas.length) {
+            cargarPregunta();
+        } else {
+            mostrarResultado();
+        }
+        }
+
+        function mostrarResultado() {
+        document.getElementById('pregunta').textContent = '';
+        document.getElementById('opciones').innerHTML = '';
+        document.getElementById('next-btn').style.display = 'none';
+        const mensaje = `Tu puntaje final es ${puntaje} de ${preguntas.length}.\n` +
+            (puntaje === preguntas.length ? '¡Excelente! 🎉' :
+            puntaje >= 3 ? '¡Muy bien hecho! 👍' :
+            puntaje >= 2 ? 'Puedes mejorar 💪' :
+            '¡Inténtalo otra vez! 😊');
+        document.getElementById('resultado').textContent = mensaje;
+        }
+
+        // Inicializar
+        cargarPregunta();
+    </script>
+    </body>
+    </html>
